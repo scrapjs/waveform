@@ -26,6 +26,6 @@ stream.pipe(plotter);
 
 ## Related
 
-> [audio-stat](https://npmjs.org/package/audio-stat) — render any kind of audio info: waveform, spectrogram etc.
-> [boscillate](https://www.npmjs.com/package/boscillate) — paint soundwave in terminal for baudio.
-> [drawille](https://github.com/madbence/node-drawille) — paint in terminal with braille characters.
+> [audio-stat](https://npmjs.org/package/audio-stat) — render any kind of audio info: waveform, spectrogram etc.<br/>
+> [boscillate](https://www.npmjs.com/package/boscillate) — paint soundwave in terminal for baudio.<br/>
+> [drawille](https://github.com/madbence/node-drawille) — paint in terminal with braille characters.<br/>

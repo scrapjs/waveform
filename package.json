@@ -1,0 +1,40 @@
+{
+  "name": "audio-waveform",
+  "version": "1.0.0",
+  "description": "Plot PCM signal waveform both in terminal/browser",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/audio-lab/waveform"
+  },
+  "keywords": [
+    "waveform",
+    "sound",
+    "audio",
+    "pcm",
+    "terminal",
+    "console",
+    "ascii",
+    "graph"
+  ],
+  "author": "Deema Yvanow <dfcreative@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/audio-lab/waveform/issues"
+  },
+  "homepage": "https://github.com/audio-lab/waveform",
+  "devDependencies": {
+    "audio-generator": "^1.0.5",
+    "audio-speaker": "^1.1.2"
+  },
+  "dependencies": {
+    "bresenham": "0.0.3",
+    "drawille": "^1.0.0",
+    "inherits": "^2.0.1",
+    "pcm-util": "^1.1.8",
+    "xtend": "^4.0.0"
+  }
+}

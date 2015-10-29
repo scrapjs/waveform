@@ -26,7 +26,7 @@ function Waveform (options) {
 	var self = this;
 
 	//nothing bad in creating canvas each time anew, to accord to terminal size
-	self.width = process.stdout.columns * 2;
+	self.width = 30//process.stdout.columns * 2;
 	self.height = process.stdout.rows * 4;
 	self.canvas = new Canvas(self.width, self.height);
 	self.canvasSet = self.canvas.set.bind(self.canvas);

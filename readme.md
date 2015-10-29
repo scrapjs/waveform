@@ -15,8 +15,14 @@ var plotter = new Waveform({
 	//what channel to display, 0 - L, 1 - R
 	channel: 0,
 
-	//size of a sliding window to display
-	windowSize: 1024,
+	//size of a sliding window to display, number of samples
+	size: 1024,
+
+	//offset of a window to display, if undefined - the last piece of data is shown
+	offset: undefined,
+
+	//max amount of data to store, number of samples
+	bufferSize: 44100 * 60,
 
 	//how often to update display (node only)
 	framesPerSecond: 20,

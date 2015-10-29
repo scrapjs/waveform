@@ -8,6 +8,8 @@ Generator(function (time) {
 	]
 }).pipe(Waveform({
 	framesPerSecond: 20,
-	windowSize: 1000,
-	line: false
+	size: 1024,
+	offset: 0,
+	bufferSize: 44100 * 5,
+	line: true
 })).pipe(Speaker());

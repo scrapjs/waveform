@@ -25,7 +25,7 @@ function Waveform (options) {
 
 	var self = this;
 
-	//nothing bad in creating canvas each time anew, to accord to terminal size
+	//set canvas props according to terminal size
 	self.width = process.stdout.columns * 2 - 2;
 	self.height = process.stdout.rows * 4;
 	self.canvas = new Canvas(self.width, self.height);
@@ -40,7 +40,7 @@ function Waveform (options) {
 	});
 
 	//data buffer to draw - by default is filled with zeros
-	self.data = Array(self.windowSize);
+	self.data = [];
 
 	//plan rendering of buffer
 	self.interval = setInterval(function () {
@@ -60,11 +60,19 @@ Waveform.prototype.channel = 0;
 
 
 /** Size of a sliding window */
-Waveform.prototype.windowSize = 1024;
+Waveform.prototype.size = 1024;
+
+
+/** Max size of a buffer - 1 mins, change if required more */
+Waveform.prototype.bufferSize = 44100 * 60;
 
 
 /** How often to update */
 Waveform.prototype.framesPerSecond = 20;
+
+
+/** Offset of a window to render */
+Waveform.prototype.offset;
 
 
 /** Catch the chunk */
@@ -76,7 +84,7 @@ Waveform.prototype._transform = function (chunk, enc, cb) {
 	self.data = self.data.concat(channelData);
 
 	//ensure window size
-	self.data = self.data.slice(-self.windowSize);
+	self.data = self.data.slice(-self.bufferSize);
 
 	//release the chunk to prevent blocking pipes
 	cb(null, chunk);
@@ -87,30 +95,38 @@ Waveform.prototype._transform = function (chunk, enc, cb) {
 Waveform.prototype.update = function () {
 	var self = this;
 
+
+	//display through width iteration
+	var offset = self.offset;
+	if (offset == null) {
+		offset = self.data.length - self.size;
+	}
+
 	self.canvas.clear();
 
 	var amp = self.height / 2;
 
-	var channelData = self.data;
-	var step = channelData.length / self.width;
+	var channelData = self.data.slice(offset, offset + self.size);
+
+	var step = self.size / self.width;
 	var middle = amp;
 
 	var prevI = 0;
 	var prevSample = 0;
 
-	//display through width iteration
 	for (var i = 0; i < self.width; i++) {
 		var sampleNumber = Math.round(step * i);
 
+		//ignore undefined data
 		if (channelData[sampleNumber] == null) continue;
 
 		var sample = pcm.convertSample(channelData[sampleNumber], self, {float: true});
 
 		if (self.line) {
-			line(i, sample * amp + middle, prevI, prevSample * amp + middle, self.canvasSet);
+			line(i, - sample * amp + middle, prevI, - prevSample * amp + middle, self.canvasSet);
 		}
 		else {
-			self.canvas.set(i, sample * amp + middle);
+			self.canvas.set(i, - sample * amp + middle);
 		}
 
 		prevI = i;

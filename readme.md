@@ -12,6 +12,17 @@ import Generator from 'audio-generator';
 
 //create waveform painter
 var plotter = new Waveform({
+	//what channel to display, 0 - L, 1 - R
+	channel: 0,
+
+	//size of a sliding window to display
+	windowSize: 1024,
+
+	//how often to update display (node only)
+	framesPerSecond: 20,
+
+	//line or point draw style
+	line: true
 });
 
 //place plotter element to the DOM (optionally)
@@ -28,5 +39,5 @@ stream.pipe(plotter);
 ## Related
 
 > [audio-stat](https://npmjs.org/package/audio-stat) — render any kind of audio info: waveform, spectrogram etc.<br/>
-> [boscillate](https://www.npmjs.com/package/boscillate) — paint soundwave in terminal for baudio.<br/>
+> [boscillate](https://www.npmjs.com/package/boscillate) — paint soundwave in terminal for baudio. API is highly inspired by that.<br/>
 > [drawille](https://github.com/madbence/node-drawille) — paint in terminal with braille characters.<br/>

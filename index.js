@@ -38,6 +38,14 @@ function Waveform (options) {
 		self.canvas = new Canvas(self.width, self.height);
 		self.canvasSet = self.canvas.set.bind(self.canvas);
 	});
+
+	//data buffer to draw - by default is filled with zeros
+	self.data = Array(self.windowSize);
+
+	//plan rendering of buffer
+	self.interval = setInterval(function () {
+		self.update();
+	}, 1000 / self.framesPerSecond);
 }
 
 inherits(Waveform, Transform);
@@ -47,42 +55,69 @@ inherits(Waveform, Transform);
 extend(Waveform.prototype, pcm.defaultFormat);
 
 
+/** Number of channel to display */
+Waveform.prototype.channel = 0;
+
+
+/** Size of a sliding window */
+Waveform.prototype.windowSize = 1024;
+
+
+/** How often to update */
+Waveform.prototype.framesPerSecond = 20;
+
+
 /** Catch the chunk */
 Waveform.prototype._transform = function (chunk, enc, cb) {
-	var channelsData = pcm.getChannelsData(chunk, this);
 	var self = this;
+	var channelData = pcm.getChannelData(chunk, self.channel, self);
+
+	//shift data
+	self.data = self.data.concat(channelData);
+
+	//ensure window size
+	self.data = self.data.slice(-self.windowSize);
 
 	//release the chunk to prevent blocking pipes
 	cb(null, chunk);
+}
 
-	//render in next frame
-	setTimeout(function () {
-		self.canvas.clear();
 
-		var channelHeight = self.height / channelsData.length;
-		var amp = channelHeight / 2;
+/** Update canvas */
+Waveform.prototype.update = function () {
+	var self = this;
 
-		for (var channel = 0; channel < channelsData.length; channel++) {
-			var channelData = channelsData[channel];
-			var step = channelData.length / self.width;
-			var middle = amp + channelHeight * channel;
-			var prevI = 0;
-			var prevSample = 0;
+	self.canvas.clear();
 
-			for (var i = 0; i < self.width; i++) {
-				var sampleNumber = Math.round(step * i);
-				var sample = pcm.convertSample(channelData[sampleNumber], this, {float: true});
+	var amp = self.height / 2;
 
-				self.canvas.set(i, sample * amp + middle);
-				line(prevI, prevSample * amp + middle, i, sample * amp + middle, self.canvasSet);
+	var channelData = self.data;
+	var step = channelData.length / self.width;
+	var middle = amp;
 
-				prevI = i;
-				prevSample = sample;
-			}
+	var prevI = 0;
+	var prevSample = 0;
+
+	//display through width iteration
+	for (var i = 0; i < self.width; i++) {
+		var sampleNumber = Math.round(step * i);
+
+		if (channelData[sampleNumber] == null) continue;
+
+		var sample = pcm.convertSample(channelData[sampleNumber], self, {float: true});
+
+		if (self.line) {
+			line(i, sample * amp + middle, prevI, prevSample * amp + middle, self.canvasSet);
+		}
+		else {
+			self.canvas.set(i, sample * amp + middle);
 		}
 
-		process.stdout.write(self.canvas.frame());
-	}, 1);
+		prevI = i;
+		prevSample = sample;
+	}
+
+	process.stdout.write(self.canvas.frame());
 }
 
 

@@ -4,8 +4,10 @@ var Speaker = require('speaker');
 
 Generator(function (time) {
 	return [
-		Math.sin(Math.PI * 2 * 440 * time)/2
+		Math.sin(Math.PI * 2 * 100 * time)/2
 	]
 }).pipe(Waveform({
-	framesPerSecond: 20
+	framesPerSecond: 20,
+	windowSize: 1000,
+	line: false
 })).pipe(Speaker());

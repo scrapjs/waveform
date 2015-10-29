@@ -27,14 +27,14 @@ function Waveform (options) {
 
 	//nothing bad in creating canvas each time anew, to accord to terminal size
 	self.width = process.stdout.columns * 2;
-	self.height = process.stdout.rows * 2;
+	self.height = process.stdout.rows * 4;
 	self.canvas = new Canvas(self.width, self.height);
 	self.canvasSet = self.canvas.set.bind(self.canvas);
 
 	//update params on resize
 	process.stdout.on('resize', function () {
 		self.width = process.stdout.columns * 2;
-		self.height = process.stdout.rows * 2;
+		self.height = process.stdout.rows * 4;
 		self.canvas = new Canvas(self.width, self.height);
 		self.canvasSet = self.canvas.set.bind(self.canvas);
 	});
@@ -52,33 +52,37 @@ Waveform.prototype._transform = function (chunk, enc, cb) {
 	var channelsData = pcm.getChannelsData(chunk, this);
 	var self = this;
 
-	self.canvas.clear();
-
-	var channelHeight = self.height / channelsData.length;
-	var amp = channelHeight / 2;
-
-	for (var channel = 0; channel < channelsData.length; channel++) {
-		var channelData = channelsData[channel];
-		var step = channelData.length / self.width;
-		var middle = amp + channelHeight * channel;
-		var prevI = 0;
-		var prevSample = 0;
-
-		for (var i = 0; i < self.width; i++) {
-			var sampleNumber = Math.round(step * i);
-			var sample = pcm.convertSample(channelData[sampleNumber], this, {float: true});
-
-			// self.canvas.set(i, sample * amp + middle);
-			line(prevI, prevSample * amp + middle, i, sample * amp + middle, self.canvasSet);
-
-			prevI = i;
-			prevSample = sample;
-		}
-	}
-
-	process.stdout.write(self.canvas.frame());
-
+	//release the chunk to prevent blocking pipes
 	cb(null, chunk);
+
+	//render in next frame
+	setTimeout(function () {
+		self.canvas.clear();
+
+		var channelHeight = self.height / channelsData.length;
+		var amp = channelHeight / 2;
+
+		for (var channel = 0; channel < channelsData.length; channel++) {
+			var channelData = channelsData[channel];
+			var step = channelData.length / self.width;
+			var middle = amp + channelHeight * channel;
+			var prevI = 0;
+			var prevSample = 0;
+
+			for (var i = 0; i < self.width; i++) {
+				var sampleNumber = Math.round(step * i);
+				var sample = pcm.convertSample(channelData[sampleNumber], this, {float: true});
+
+				self.canvas.set(i, sample * amp + middle);
+				line(prevI, prevSample * amp + middle, i, sample * amp + middle, self.canvasSet);
+
+				prevI = i;
+				prevSample = sample;
+			}
+		}
+
+		process.stdout.write(self.canvas.frame(''));
+	}, 1);
 }
 
 

@@ -11,7 +11,8 @@ import Generator from 'audio-generator';
 
 
 //create waveform painter
-var plotter = new Waveform();
+var plotter = new Waveform({
+});
 
 //place plotter element to the DOM (optionally)
 document.body.appendChild(plotter.element);

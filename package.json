@@ -1,6 +1,6 @@
 {
   "name": "audio-waveform",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Plot PCM signal waveform both in terminal/browser",
   "main": "index.js",
   "scripts": {

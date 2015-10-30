@@ -46,6 +46,11 @@ function Waveform (options) {
 	self.interval = setInterval(function () {
 		self.update();
 	}, 1000 / self.framesPerSecond);
+
+	//stop on end
+	self.on('end', function () {
+		clearInterval(self.interval);
+	});
 }
 
 inherits(Waveform, Transform);

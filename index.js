@@ -1,16 +1,12 @@
 /**
- * Draw waveform in terminal
+ * Draw waveform in terminal/canvas
  *
  * @module  audio-waveform
  */
 
 var inherits = require('inherits');
-var Transform = require('stream').Transform;
 var pcm = require('pcm-util');
-var extend = require('xtend/mutable');
-var Canvas = require('drawille');
-var line = require('bresenham')
-
+var RenderStream = require('audio-render');
 
 
 /**
@@ -19,126 +15,57 @@ var line = require('bresenham')
 function Waveform (options) {
 	if (!(this instanceof Waveform)) return new Waveform(options);
 
-	Transform.call(this);
-
-	extend(this, options);
-
-	var self = this;
-
-	//set canvas props according to terminal size
-	self.width = process.stdout.columns * 2 - 2;
-	self.height = process.stdout.rows * 4;
-	self.canvas = new Canvas(self.width, self.height);
-	self.canvasSet = self.canvas.set.bind(self.canvas);
-
-	//update params on resize
-	process.stdout.on('resize', function () {
-		self.width = process.stdout.columns * 2;
-		self.height = process.stdout.rows * 4;
-		self.canvas = new Canvas(self.width, self.height);
-		self.canvasSet = self.canvas.set.bind(self.canvas);
-	});
-
-	//data buffer to draw - by default is filled with zeros
-	self.data = [];
-
-	//plan rendering of buffer
-	self.interval = setInterval(function () {
-		self.update();
-	}, 1000 / self.framesPerSecond);
-
-	//stop on end
-	self.on('end', function () {
-		clearInterval(self.interval);
-	});
+	RenderStream.call(this, options);
 }
 
-inherits(Waveform, Transform);
+inherits(Waveform, RenderStream);
 
 
-/** Get default format properties */
-extend(Waveform.prototype, pcm.defaultFormat);
-
-
-/** Number of channel to display */
-Waveform.prototype.channel = 0;
+/** Offset of a sliding window */
+Waveform.prototype.offset;
 
 
 /** Size of a sliding window */
 Waveform.prototype.size = 1024;
 
 
-/** Max size of a buffer - 1 mins, change if required more */
-Waveform.prototype.bufferSize = 44100 * 60;
-
-
-/** How often to update */
-Waveform.prototype.framesPerSecond = 20;
-
-
-/** Offset of a window to render */
-Waveform.prototype.offset;
-
-
-/** Catch the chunk */
-Waveform.prototype._transform = function (chunk, enc, cb) {
-	var self = this;
-	var channelData = pcm.getChannelData(chunk, self.channel, self);
-
-	//shift data
-	self.data = self.data.concat(channelData);
-
-	//ensure window size
-	self.data = self.data.slice(-self.bufferSize);
-
-	//release the chunk to prevent blocking pipes
-	cb(null, chunk);
-}
-
-
-/** Update canvas */
-Waveform.prototype.update = function () {
+/** Draw in canvas */
+Waveform.prototype.render = function (canvas, data) {
 	var self = this;
 
-
-	//display through width iteration
 	var offset = self.offset;
+
+	//if offset is undefined - show last piece of data
 	if (offset == null) {
-		offset = self.data.length - self.size;
+		offset = data.length - self.size;
+		if (offset < 0) offset = 0;
 	}
 
-	self.canvas.clear();
+	var context = canvas.getContext('2d');
 
-	var amp = self.height / 2;
+	context.clearRect(0, 0, canvas.width, canvas.height);
 
-	var channelData = self.data.slice(offset, offset + self.size);
+	var amp = canvas.height / 2;
 
-	var step = self.size / self.width;
+	var frameData = data.slice(offset, offset + self.size);
+
+	var step = self.size / canvas.width;
 	var middle = amp;
 
-	var prevI = 0;
-	var prevSample = 0;
+	context.beginPath();
+	context.moveTo(0, middle);
 
-	for (var i = 0; i < self.width; i++) {
+	for (var i = 0; i < canvas.width; i++) {
 		var sampleNumber = Math.round(step * i);
+		var sample = frameData[sampleNumber];
 
 		//ignore undefined data
-		if (channelData[sampleNumber] == null) continue;
+		if (sample == null) continue;
 
-		var sample = pcm.convertSample(channelData[sampleNumber], self, {float: true});
-
-		if (self.line) {
-			line(i, - sample * amp + middle, prevI, - prevSample * amp + middle, self.canvasSet);
-		}
-		else {
-			self.canvas.set(i, - sample * amp + middle);
-		}
-
-		prevI = i;
-		prevSample = sample;
+		context.lineTo(i, -sample * amp + middle);
 	}
 
-	process.stdout.write(self.canvas.frame());
+	context.stroke();
 }
 
 

@@ -8,6 +8,7 @@ Draw audio signal waveform, both in browser or node.
 ```js
 import Waveform from 'audio-waveform';
 import Generator from 'audio-generator';
+import Speaker from 'audio-speaker';
 
 
 //create waveform painter
@@ -21,15 +22,22 @@ var plotter = new Waveform({
 	//offset of a window to display, if undefined - the last piece of data is shown
 	offset: undefined,
 
-	//max amount of data to store, number of samples
-	bufferSize: 44100 * 60,
-
 	//how often to update display (node only)
 	framesPerSecond: 20,
 
 	//line or point draw style
-	line: true
+	line: true,
+
+	//size of a waveform data to store
+	bufferSize: 44100,
+
+	//canvas element to render (optional)
+	canvas: undefined
+
+	//...pcm-format options, see pcm-util below
 });
+
+var speaker = Speaker();
 
 //place plotter element to the DOM (optionally)
 document.body.appendChild(plotter.element);
@@ -39,11 +47,15 @@ document.body.appendChild(plotter.element);
 var stream = new Generator(function (time) {
 	return Math.sin(Math.PI * 2 * 440 * time);
 });
+
+stream.pipe(speaker);
 stream.pipe(plotter);
 ```
 
 ## Related
 
+> [pcm-util](https://npmjs.org/package/pcm-util) — utils for working with pcm-streams.<br/>
+> [audio-render](https://npmjs.org/package/audio-render) — generic class for implementing any audio-stream rendering.<br/>
 > [audio-stat](https://npmjs.org/package/audio-stat) — render any kind of audio info: waveform, spectrogram etc.<br/>
 > [boscillate](https://www.npmjs.com/package/boscillate) — paint soundwave in terminal for baudio. API is highly inspired by that.<br/>
 > [drawille](https://github.com/madbence/node-drawille) — paint in terminal with braille characters.<br/>

@@ -4,7 +4,8 @@
   "description": "Plot PCM signal waveform both in terminal/browser",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "watch": "watchify ./test.js -d -o ./bundle.js"
   },
   "repository": {
     "type": "git",
@@ -28,13 +29,13 @@
   "homepage": "https://github.com/audio-lab/waveform",
   "devDependencies": {
     "audio-generator": "^1.0.5",
-    "audio-speaker": "^1.1.2"
+    "audio-speaker": "^1.1.2",
+    "watchify": "^3.6.0"
   },
   "dependencies": {
-    "bresenham": "0.0.3",
-    "drawille": "^1.0.0",
+    "audio-render": "^1.0.0",
+    "drawille-canvas": "^1.0.0",
     "inherits": "^2.0.1",
-    "pcm-util": "^1.1.8",
-    "xtend": "^4.0.0"
+    "pcm-util": "^1.1.8"
   }
 }

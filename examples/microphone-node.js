@@ -1,6 +1,6 @@
 'use strict'
 
-const waveform = require('../../')
+const waveform = require('../')
 const mic      = require('mic')
 
 

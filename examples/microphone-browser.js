@@ -1,6 +1,6 @@
 'use strict'
 
-const waveform     = require('../../')
+const waveform     = require('../')
 const waveRecorder = require('wave-recorder')
 
 
@@ -17,7 +17,7 @@ const drawer = waveform({
 function getUserMedia(callback, error)
 {
   try {
-    navigator.getUserMedia = 
+    navigator.getUserMedia =
     navigator.getUserMedia ||
     navigator.webkitGetUserMedia ||
     navigator.mozGetUserMedia;
@@ -28,11 +28,11 @@ function getUserMedia(callback, error)
 }
 
 function gotStream(stream)
-{ 
+{
   var audioContext = new AudioContext()
   var audioInput = audioContext.createMediaStreamSource(stream)
 
-  // create the recorder instance 
+  // create the recorder instance
   var recorder = waveRecorder(audioContext, {
     channels: CHANNEL_COUNT,
     bitDepth: 16
